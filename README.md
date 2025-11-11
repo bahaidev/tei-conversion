@@ -1,6 +1,8 @@
 # Kitáb-i-Aqdas HTML/XHTML to TEI XML Converter
 
-This Node.js script converts "The Kitáb-i-Aqdas" from HTML or XHTML format to TEI P5 XML format.
+This Node.js script converts TEI documents (starting with *The Kitáb-i-Aqdas*) from HTML or XHTML format to TEI P5 XML format.
+
+See the result at <https://bahaidev.github.io/tei-conversion/kitab-i-aqdas.xml>.
 
 ## Overview
 
