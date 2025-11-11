@@ -23,6 +23,17 @@ function cleanText(text) {
 }
 
 /**
+ * Remove a leading numeric label like "1.", "(1)", "[1]", "1)" from the start of a string
+ * Used to avoid duplicating numbers when we also render @n via XSL
+ */
+function stripLeadingNumber(text) {
+  if (!text) return '';
+  // Matches leading numeric labels such as: 1.  | 1  | (1)  | [1]  | 1)  | 1:  | 1]  with optional surrounding spaces
+  // Also consumes either following whitespace or end-of-string so bare markers like "10." are removed fully
+  return text.replace(/^\s*(?:[\(\[])?\s*\d{1,3}(?:\s*[\.:\)\]])?(?:\s+|$)/, '');
+}
+
+/**
  * Convert HTML entities and special characters
  */
 function normalizeText(text) {
@@ -194,7 +205,9 @@ function parseDocument(dom) {
       const el = anchorMap.get(name);
       if (!el) break;
       const nextEl = anchorMap.get(`par${i+1}`) || null;
-      const text = collectBetween(el, nextEl);
+      let text = collectBetween(el, nextEl);
+      // Avoid duplicated numbering in content for main text
+      if (text) text = stripLeadingNumber(text);
       if (text) sections.text.push({ n: i, text });
     }
     // Questions
@@ -203,7 +216,9 @@ function parseDocument(dom) {
       const el = anchorMap.get(name);
       if (!el) break;
       const nextEl = anchorMap.get(`q${i+1}`) || null;
-      const text = collectBetween(el, nextEl);
+      let text = collectBetween(el, nextEl);
+      // Avoid duplicated numbering in content for Q&A
+      if (text) text = stripLeadingNumber(text);
       if (text) sections.questions.push({ n: i, text });
     }
     // Notes
@@ -330,7 +345,11 @@ function parseDocument(dom) {
 
     let counter = 1;
     for (const p of filteredParas) {
-      const text = cleanText(extractTextWithFormatting(p));
+      let text = cleanText(extractTextWithFormatting(p));
+      // For main text and Q&A, strip any leading numeric label present in the paragraph content
+      if (map.type === 'text' || map.type === 'questions') {
+        text = stripLeadingNumber(text);
+      }
       if (!text || text.length < 3) continue;
       sections[map.type].push({ n: counter++, text });
     }
