@@ -22,10 +22,10 @@ The Kitáb-i-Aqdas (The Most Holy Book) is the central book of the Bahá'í Fait
 - **Complete conversion** of all major sections:
   - Preface (7 paragraphs)
   - Introduction (30 paragraphs)
-  - Description (7 paragraphs)
-  - Main text (63+ paragraphs)
-  - Questions and Answers (150+ items)
-  - Notes (40+ items)
+  - Description (8 paragraphs)
+  - Main text (190 paragraphs)
+  - Questions and Answers (107 items)
+  - Notes (194 items)
 
 - **Preserves formatting**:
   - Italic text (`<hi rend="italic">`)
@@ -91,10 +91,10 @@ Extracting sections...
 Sections found:
   - Preface: 7 paragraphs
   - Introduction: 30 paragraphs
-  - Description: 7 paragraphs
-  - Main text: 63 paragraphs
-  - Questions: 150 items
-  - Notes: 40 items
+  - Description: 8 paragraphs
+  - Main text: 190 paragraphs
+  - Questions: 107 items
+  - Notes: 194 items
 
 Generating TEI XML...
 Writing output file...
@@ -163,8 +163,8 @@ The TEI document follows the TEI P5 guidelines:
       </div>
       <div type="main-text">
         <head>The Kitáb-i-Aqdas</head>
-        <p n="1">...</p>
-        <!-- 190 paragraphs -->
+  <p n="1">...</p>
+  <!-- up to n="190" -->
       </div>
       <div type="questions-answers">
         <head>Questions and Answers</head>

@@ -272,9 +272,9 @@ function parseDocument(dom) {
     let container = startAnchor.closest('div');
     if (!container) return [];
 
-    // Collect all following sibling elements until we hit the next section heading
+    // Collect the container itself and all following sibling elements until we hit the next section heading
     const nodes = [];
-    let current = container.nextSibling;
+    let current = container;
 
     while (current) {
       if (current.nodeType === 1) {
@@ -291,65 +291,184 @@ function parseDocument(dom) {
     return nodes;
   }
 
+  // Generic DOM-order collector between two anchors for elements matching a selector
+  function collectElementsBetween(startId, endId, selector) {
+    const startAnchor = document.querySelector(`a[id="${startId}"]`);
+    if (!startAnchor) return [];
+    const endAnchor = endId ? document.querySelector(`a[id="${endId}"]`) : null;
+
+    function nextNode(node) {
+      if (!node) return null;
+      if (node.firstChild) return node.firstChild;
+      while (node) {
+        if (node.nextSibling) return node.nextSibling;
+        node = node.parentNode;
+      }
+      return null;
+    }
+
+    const out = [];
+    let node = nextNode(startAnchor);
+    while (node && node !== endAnchor) {
+      if (node.nodeType === 1) {
+        const el = node;
+        try {
+          if (el.matches && el.matches(selector)) out.push(el);
+        } catch (_) {
+          // ignore invalid selectors or elements without matches
+        }
+      }
+      node = nextNode(node);
+    }
+    return out;
+  }
+
   for (let i = 0; i < mapped.length; i++) {
     const { id, map } = mapped[i];
     const nextId = (i + 1 < mapped.length) ? mapped[i+1].id : null;
-    const contentNodes = collectSectionNodes(id, nextId);
-
     if (map.type === 'notes') {
-      // Notes section: each <div class="dd"> is a separate note
-      // Look for div.dd elements that contain span.jb with the note number
-      const allDivs = contentNodes.flatMap(n => {
-        if (n.classList && n.classList.contains('dd')) return [n];
-        return Array.from(n.querySelectorAll('div.dd'));
-      });
-
-      for (const div of allDivs) {
-        // Find the note number in the first span.jb
+      const noteDivs = collectElementsBetween(id, nextId, 'div.dd');
+      for (const div of noteDivs) {
         const titleSpan = div.querySelector('span.jb');
         if (!titleSpan) continue;
-
         const titleText = titleSpan.textContent.trim();
-        const numMatch = titleText.match(/^(\d+)\./);
+        const numMatch = titleText.match(/^(\d+)/);
         const noteNum = numMatch ? numMatch[1] : '';
 
-        // Collect all paragraph text from this note div
         let noteText = '';
         const paras = div.querySelectorAll('p');
-        for (const p of paras) {
-          noteText += ' ' + extractTextWithFormatting(p);
-        }
-
-        if (noteText.trim()) {
-          sections.notes.push({ n: noteNum, text: cleanText(noteText) });
-        }
+        for (const p of paras) noteText += ' ' + extractTextWithFormatting(p);
+        if (noteText.trim()) sections.notes.push({ n: noteNum, text: cleanText(noteText) });
       }
       continue;
     }
 
-    // General paragraph extraction for all other section types
-    const paragraphs = [];
-    contentNodes.forEach(node => {
-      if (node.tagName && node.tagName.toLowerCase() === 'p') {
-        paragraphs.push(node);
-      } else {
-        paragraphs.push(...Array.from(node.querySelectorAll('p')));
+    // General extraction: collect paragraph-like blocks between anchors
+    // For questions, include p, li, and divs that behave like paragraphs (no block children)
+    let parasBetween = [];
+    if (map.type === 'questions') {
+      const candidates = collectElementsBetween(id, nextId, 'p, li, div');
+      const hasBlockChild = (el) => !!(el.querySelector && el.querySelector('p, div > div, table, ul, ol, section, article'));
+      parasBetween = candidates.filter(el => {
+        // Exclude obvious non-content containers
+        const cls = (el.getAttribute && (el.getAttribute('class') || '')) || '';
+        if (/\bdd\b/.test(cls)) return false; // notes container
+        if (/\bic\b/.test(cls)) return false; // heading container
+        // Keep <p> always; keep <li>; keep <div> that doesn't contain nested block elements
+        const tag = el.tagName ? el.tagName.toLowerCase() : '';
+        if (tag === 'p' || tag === 'li') return true;
+        if (tag === 'div' && !hasBlockChild(el)) return true;
+        return false;
+      });
+    } else {
+      parasBetween = collectElementsBetween(id, nextId, 'p');
+    }
+
+    if (map.type === 'questions') {
+      // Group into items based on numeric markers and Question/Answer labels
+      let currentNum = null;
+      let prevNum = 0;
+      const pendingQueue = []; // queue of numbers seen on number-only lines
+      let currentText = '';
+      const flush = () => {
+        if (currentNum !== null && currentText.trim().length > 0) {
+          sections.questions.push({ n: currentNum, text: cleanText(currentText) });
+          prevNum = parseInt(currentNum, 10) || prevNum;
+        }
+        currentNum = null;
+        currentText = '';
+      };
+      for (const p of parasBetween) {
+        const rawText = (p.textContent || '').trim();
+        const numOnly = rawText.match(/^\s*(\d{1,3})(?:\s*[\.:\)\]])?\s*$/);
+        const numAtStart = rawText.match(/^\s*(\d{1,3})(?:\s*[\.:\)\]])?/);
+        const isQuestion = /\bQuestion\s*[:\u2014\-]/i.test(rawText);
+        const isAnswer = /\bAnswer\s*[:\u2014\-]/i.test(rawText);
+
+        if (numOnly) {
+          // Remember this number for the next Question line
+          pendingQueue.push(parseInt(numOnly[1], 10));
+          continue;
+        }
+
+        if (isQuestion) {
+          // Start a new item
+          flush();
+          const n = numAtStart ? parseInt(numAtStart[1], 10) : ((pendingQueue.length ? pendingQueue.shift() : null) ?? (prevNum + 1));
+          currentNum = String(n);
+          // clear any duplicate same number at head of queue
+          while (pendingQueue.length && pendingQueue[0] === n) pendingQueue.shift();
+          let t = cleanText(extractTextWithFormatting(p));
+          t = stripLeadingNumber(t);
+          currentText = t;
+          continue;
+        }
+
+        if (isAnswer && currentNum !== null) {
+          let t = cleanText(extractTextWithFormatting(p));
+          t = stripLeadingNumber(t);
+          currentText += ' ' + t;
+          continue;
+        }
+
+        // Handle implicit question paragraphs: a numbered line was seen (pendingNum),
+        // or a number appears at the start of this paragraph, but there is no explicit "Question:" label.
+        // Treat this as the start of a new question item.
+        if (currentNum === null && !isAnswer) {
+          const impliedNum = numAtStart ? parseInt(numAtStart[1], 10) : (pendingQueue.length ? pendingQueue.shift() : null);
+          if (impliedNum !== null) {
+            flush();
+            currentNum = String(impliedNum);
+            // remove duplicates of same number in queue
+            while (pendingQueue.length && pendingQueue[0] === impliedNum) pendingQueue.shift();
+            let t = cleanText(extractTextWithFormatting(p));
+            t = stripLeadingNumber(t);
+            if (t && t.length > 2) {
+              currentText = t;
+              continue;
+            } else {
+              // If no substantive text after stripping, reset and keep scanning
+              currentNum = null;
+              currentText = '';
+              continue;
+            }
+          }
+        }
+
+        if (currentNum !== null) {
+          // Continuation of the current item
+          let t = cleanText(extractTextWithFormatting(p));
+          t = stripLeadingNumber(t);
+          if (t) currentText += ' ' + t;
+        }
       }
-    });
+      flush();
+      // Emit any trailing number-only items that had no text but should count as items
+      while (pendingQueue.length) {
+        const n = pendingQueue.shift();
+        // Avoid duplicates if last emitted has same number
+        if (!sections.questions.length || sections.questions[sections.questions.length - 1].n !== String(n)) {
+          sections.questions.push({ n: String(n), text: '' });
+        }
+        prevNum = n;
+      }
+      continue;
+    }
 
-    const filteredParas = paragraphs.filter(p => {
-      const txt = p.textContent.trim();
-      // Filter out very short content and navigation elements
-      return txt.length > 0;
-    });
-
+    // For other sections (including main text), map each paragraph sequentially
     let counter = 1;
-    for (const p of filteredParas) {
-      let text = cleanText(extractTextWithFormatting(p));
-      // For main text and Q&A, strip any leading numeric label present in the paragraph content
-      if (map.type === 'text' || map.type === 'questions') {
-        text = stripLeadingNumber(text);
+    // For main text, skip initial invocation ("In the name of...") if present
+    let startIndex = 0;
+    if (map.type === 'text' && parasBetween.length > 0) {
+      const firstTxt = (parasBetween[0].textContent || '').trim().toLowerCase();
+      if (firstTxt.startsWith('in the name of')) {
+        startIndex = 1;
       }
+    }
+    for (let i = startIndex; i < parasBetween.length; i++) {
+      const p = parasBetween[i];
+      let text = cleanText(extractTextWithFormatting(p));
+      if (map.type === 'text') text = stripLeadingNumber(text);
       if (!text || text.length < 3) continue;
       sections[map.type].push({ n: counter++, text });
     }
