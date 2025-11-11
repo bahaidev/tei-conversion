@@ -1,0 +1,29 @@
+{
+  "type": "module",
+  "name": "tei-conversion",
+  "version": "1.0.0",
+  "description": "Convert the Kitáb-i-Aqdas from HTML to TEI P5 XML format",
+  "main": "convert-to-tei.js",
+  "scripts": {
+    "convert": "node convert-to-tei.js",
+    "start": "open http://127.0.0.1:8057/kitab-i-aqdas.xml && static -p 8057"
+  },
+  "keywords": [
+    "TEI",
+    "XML",
+    "conversion",
+    "Bahai",
+    "Kitab-i-Aqdas"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bahaidev/tei-conversion"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@node-static/node-static": "^0.8.0",
+    "jsdom": "^24.0.0",
+    "open": "^10.2.0"
+  }
+}
