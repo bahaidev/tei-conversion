@@ -2,6 +2,10 @@
 
 [
 
+['/', function () {
+  this.applyTemplates('//p[@n]');
+}],
+
 ['//p[@n]', function (p) {
   this.element('p', function () {
     this.applyTemplates();
