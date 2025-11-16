@@ -6,23 +6,22 @@
   this.applyTemplates('//p[@n]');
 }],
 
-['//p[@n]', function (p) {
+['//p[@n]', function () {
   this.element('p', function () {
     this.applyTemplates();
-    this.text(p.childNodes[2].nodeValue);
+    this.valueOf({select: './text()[2]'});
   });
   this.string('\n\n')
 }],
 
 
-['hi', function (p) {
+['hi', function () {
   this.element('div', function () {
     this.element('i', function () {
-      this.text(p.textContent)
+      this.valueOf({select: '.'})
     });
   });
   this.string('\n\n')
 }]
 
 ]
-
