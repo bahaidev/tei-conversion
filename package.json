@@ -3,9 +3,9 @@
   "name": "tei-conversion",
   "version": "1.0.0",
   "description": "Convert the Kitáb-i-Aqdas from HTML to TEI P5 XML format",
-  "main": "convert-to-tei.js",
+  "main": "convert-aqdas-to-tei.js",
   "scripts": {
-    "convert": "node convert-to-tei.js",
+    "convert": "node convert-aqdas-to-tei.js",
     "start": "open http://127.0.0.1:8057/kitab-i-aqdas.xml && static -p 8057"
   },
   "keywords": [

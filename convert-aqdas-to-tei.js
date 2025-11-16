@@ -8,8 +8,8 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { JSDOM } from 'jsdom';
 
-const INPUT_FILE = './The Kitáb-i-Aqdas.xhtml';
-const OUTPUT_FILE = './kitab-i-aqdas.xml';
+const INPUT_FILE = './books/The Kitáb-i-Aqdas.xhtml';
+const OUTPUT_FILE = './books/kitab-i-aqdas.xml';
 
 /**
  * Clean and normalize text content

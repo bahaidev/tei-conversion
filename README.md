@@ -11,7 +11,7 @@ The Kitáb-i-Aqdas (The Most Holy Book) is the central book of the Bahá'í Fait
 ## Files
 
 - `The Kitáb-i-Aqdas.xhtml` - Official XHTML source document from Bahá'í Reference Library
-- `convert-to-tei.js` - Main conversion script (ESM Node.js)
+- `convert-aqdas-to-tei.js` - Main conversion script (ESM Node.js)
 - `package.json` - Node.js configuration and dependencies
 - `kitab-i-aqdas.xml` - Generated TEI XML output (created when you run the script)
 - `tei-to-html.xsl` - XSLT stylesheet for viewing XML as formatted HTML
@@ -185,11 +185,11 @@ The TEI document follows the TEI P5 guidelines:
 
 ### Source File
 
-The script is configured to read from `The Kitáb-i-Aqdas.xhtml` by default. To use a different file, edit the constant at the top of `convert-to-tei.js`:
+The script is configured to read from `The Kitáb-i-Aqdas.xhtml` by default. To use a different file, edit the constant at the top of `convert-aqdas-to-tei.js`:
 
 ```javascript
-const INPUT_FILE = './The Kitáb-i-Aqdas.xhtml';
-const OUTPUT_FILE = './kitab-i-aqdas.xml';
+const INPUT_FILE = './books/The Kitáb-i-Aqdas.xhtml';
+const OUTPUT_FILE = './books/kitab-i-aqdas.xml';
 ```
 
 The converter automatically detects the document structure:
