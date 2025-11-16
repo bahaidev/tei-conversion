@@ -53,6 +53,21 @@
             margin-bottom: 30px;
           }
           
+          .preamble, .conclusion {
+            font-style: italic;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f8ff;
+            border-left: 4px solid #3498db;
+            line-height: 1.8;
+          }
+          
+          .conclusion {
+            margin-top: 40px;
+            border-left-color: #27ae60;
+            background: #f0fff4;
+          }
+          
           .verse {
             margin-bottom: 25px;
             padding: 15px;
@@ -141,8 +156,18 @@
 
   <xsl:template match="tei:div[@type='part']">
     <div class="part">
-      <h2><xsl:value-of select="tei:head"/></h2>
-      <xsl:apply-templates select="tei:p"/>
+      <h2><xsl:value-of select="tei:head[1]"/></h2>
+      <xsl:if test="tei:p[@type='preamble']">
+        <p class="preamble">
+          <xsl:apply-templates select="tei:p[@type='preamble']/node()"/>
+        </p>
+      </xsl:if>
+      <xsl:apply-templates select="tei:p[not(@type)]"/>
+      <xsl:if test="tei:p[@type='conclusion']">
+        <p class="conclusion">
+          <xsl:apply-templates select="tei:p[@type='conclusion']/node()"/>
+        </p>
+      </xsl:if>
     </div>
   </xsl:template>
 

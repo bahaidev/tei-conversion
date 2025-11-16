@@ -31,7 +31,10 @@ async function convertHTMLToTEI() {
 function parseDocument(document) {
   const sections = {
     arabic: [],
-    persian: []
+    persian: [],
+    arabicPreamble: '',
+    persianPreamble: '',
+    conclusion: ''
   };
 
   // Find the two main parts by their section IDs
@@ -48,6 +51,20 @@ function parseDocument(document) {
     if (arabicSection) arabicSection = arabicSection.parentElement;
 
     if (arabicSection) {
+      // Extract preamble: "He Is the Glory of Glories" + the paragraph after it
+      const gloryPara = arabicSection.querySelector('p.w');
+      const textPara = arabicSection.querySelector('p.zd.hb');
+      
+      let preambleText = '';
+      if (gloryPara) {
+        preambleText = extractTextWithFormatting(gloryPara);
+      }
+      if (textPara) {
+        if (preambleText) preambleText += '\n\n';
+        preambleText += extractTextWithFormatting(textPara);
+      }
+      sections.arabicPreamble = preambleText;
+      
       sections.arabic = extractVerses(arabicSection);
     }
   }
@@ -60,7 +77,19 @@ function parseDocument(document) {
     if (persianSection) persianSection = persianSection.parentElement;
 
     if (persianSection) {
+      // Extract preamble (the paragraph "In the Name of the Lord of Utterance, the Mighty.")
+      const preambleParas = persianSection.querySelectorAll('p.dd.zd.hb');
+      if (preambleParas.length > 0 && preambleParas[0].textContent.includes('In the Name')) {
+        sections.persianPreamble = extractTextWithFormatting(preambleParas[0]);
+      }
+      
       sections.persian = extractVerses(persianSection);
+      
+      // Extract conclusion (the last p.zd.hb after all verses)
+      const allHbParas = persianSection.querySelectorAll('p.zd.hb');
+      if (allHbParas.length > 1) {
+        sections.conclusion = extractTextWithFormatting(allHbParas[allHbParas.length - 1]);
+      }
     }
   }
 
@@ -233,6 +262,10 @@ function generateTEI(sections) {
         <head>Part One: From the Arabic</head>
 `;
 
+    if (sections.arabicPreamble) {
+      body += `        <p type="preamble">${sections.arabicPreamble}</p>\n`;
+    }
+
     sections.arabic.forEach(verse => {
       body += `        <p n="${verse.n}">${verse.text}</p>\n`;
     });
@@ -247,9 +280,17 @@ function generateTEI(sections) {
         <head>Part Two: From the Persian</head>
 `;
 
+    if (sections.persianPreamble) {
+      body += `        <p type="preamble">${sections.persianPreamble}</p>\n`;
+    }
+
     sections.persian.forEach(verse => {
       body += `        <p n="${verse.n}">${verse.text}</p>\n`;
     });
+
+    if (sections.conclusion) {
+      body += `        <p type="conclusion">${sections.conclusion}</p>\n`;
+    }
 
     body += `      </div>\n`;
   }
