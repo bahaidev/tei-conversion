@@ -2,7 +2,9 @@
 
 This Node.js script converts TEI documents (starting with *The Kitáb-i-Aqdas*) from HTML or XHTML format to TEI P5 XML format.
 
-See the result at <https://bahaidev.github.io/tei-conversion/kitab-i-aqdas.xml>.
+See the results at:
+- <https://bahaidev.github.io/tei-conversion/books/hidden-words.xml>
+- <https://bahaidev.github.io/tei-conversion/books/kitab-i-aqdas.xml>
 
 ## Overview
 
@@ -99,7 +101,7 @@ Sections found:
 Generating TEI XML...
 Writing output file...
 
-Conversion complete! Output saved to: ./kitab-i-aqdas.xml
+Conversion complete! Output saved to: ./books/kitab-i-aqdas.xml
 Total file size: 132.75 KB
 ```
 
@@ -111,16 +113,16 @@ The generated XML file includes an XSLT stylesheet that transforms it into beaut
 
 ```bash
 # macOS
-open kitab-i-aqdas.xml
+open books/kitab-i-aqdas.xml
 
 # Linux
-xdg-open kitab-i-aqdas.xml
+xdg-open books/kitab-i-aqdas.xml
 
 # Windows
-start kitab-i-aqdas.xml
+start books/kitab-i-aqdas.xml
 ```
 
-Or simply double-click the `kitab-i-aqdas.xml` file in your file manager.
+Or simply double-click the `books/kitab-i-aqdas.xml` file in your file manager.
 
 The stylesheet (`books/tei-to-html.xsl`) provides:
 - **Elegant typography** with serif fonts and proper spacing
@@ -220,7 +222,7 @@ The converter handles:
 To validate the generated TEI XML:
 
 1. Use an online validator: [TEI by Example Validator](https://teibyexample.org/tools/TBEvalidator.htm)
-2. Use xmllint: `xmllint --noout --schema tei_all.xsd kitab-i-aqdas.xml`
+2. Use xmllint: `xmllint --noout --schema tei_all.xsd books/kitab-i-aqdas.xml`
 3. Use oXygen XML Editor for comprehensive validation
 
 ## Resources
