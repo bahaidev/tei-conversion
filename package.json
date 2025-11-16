@@ -3,10 +3,11 @@
   "name": "tei-conversion",
   "version": "1.0.0",
   "description": "Convert the Kitáb-i-Aqdas from HTML to TEI P5 XML format",
-  "main": "convert-aqdas-to-tei.js",
+  "main": "src/convert-aqdas-to-tei.js",
   "scripts": {
-    "convert": "node convert-aqdas-to-tei.js",
-    "start": "open http://127.0.0.1:8057/kitab-i-aqdas.xml && static -p 8057"
+    "convert-aqdas": "node src/convert-aqdas-to-tei.js",
+    "convert-hidden-words": "node src/convert-hidden-words-to-tei.js",
+    "start": "open http://127.0.0.1:8057/books/hidden-words.xml && static -p 8057"
   },
   "keywords": [
     "TEI",

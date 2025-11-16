@@ -10,11 +10,11 @@ The Kitáb-i-Aqdas (The Most Holy Book) is the central book of the Bahá'í Fait
 
 ## Files
 
-- `The Kitáb-i-Aqdas.xhtml` - Official XHTML source document from Bahá'í Reference Library
-- `convert-aqdas-to-tei.js` - Main conversion script (ESM Node.js)
+- `books/The Kitáb-i-Aqdas.xhtml` - Official XHTML source document from Bahá'í Reference Library
+- `src/convert-aqdas-to-tei.js` - Main conversion script (ESM Node.js)
 - `package.json` - Node.js configuration and dependencies
-- `kitab-i-aqdas.xml` - Generated TEI XML output (created when you run the script)
-- `tei-to-html.xsl` - XSLT stylesheet for viewing XML as formatted HTML
+- `books/kitab-i-aqdas.xml` - Generated TEI XML output (created when you run the script)
+- `books/tei-to-html.xsl` - XSLT stylesheet for viewing XML as formatted HTML
 
 ## Features
 
@@ -122,7 +122,7 @@ start kitab-i-aqdas.xml
 
 Or simply double-click the `kitab-i-aqdas.xml` file in your file manager.
 
-The stylesheet (`tei-to-html.xsl`) provides:
+The stylesheet (`books/tei-to-html.xsl`) provides:
 - **Elegant typography** with serif fonts and proper spacing
 - **Automatic table of contents** with section navigation
 - **Color-coded sections** for easy visual distinction
@@ -185,7 +185,7 @@ The TEI document follows the TEI P5 guidelines:
 
 ### Source File
 
-The script is configured to read from `The Kitáb-i-Aqdas.xhtml` by default. To use a different file, edit the constant at the top of `convert-aqdas-to-tei.js`:
+The script is configured to read from `The Kitáb-i-Aqdas.xhtml` by default. To use a different file, edit the constant at the top of `src/convert-aqdas-to-tei.js`:
 
 ```javascript
 const INPUT_FILE = './books/The Kitáb-i-Aqdas.xhtml';
